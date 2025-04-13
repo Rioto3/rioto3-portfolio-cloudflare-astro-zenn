@@ -2,17 +2,65 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 
 const articles = await Astro.glob('../../content/articles/*.md');
+const sortedArticles = articles
+  .filter(article => article.frontmatter.published !== false)
+  .sort((a, b) => new Date(b.frontmatter.date || 0) - new Date(a.frontmatter.date || 0));
 ---
 
 <MainLayout>
-  <h1>Articles</h1>
-  <ul>
-    {articles.map(article => (
-      <li>
-        <a href={`/articles/${article.frontmatter.slug || article.file.split('/').pop().replace('.md', '')}`}>
-          {article.frontmatter.title}
-        </a>
-      </li>
-    ))}
-  </ul>
+  <div class="py-10">
+    <header class="mb-12">
+      <h1 class="text-4xl font-bold mb-4">記事一覧</h1>
+      <div class="h-1 w-24 bg-blue-600 rounded"></div>
+    </header>
+    
+    <div class="space-y-8">
+      {sortedArticles.map(article => (
+        <article class="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
+          <a href={`/articles/${article.frontmatter.slug || article.file.split('/').pop().replace('.md', '')}`} class="block p-0">
+            <div class="flex items-start p-6">
+              <div class="emoji-container mr-5">
+                <span class="text-4xl block">{article.frontmatter.emoji || "📝"}</span>
+              </div>
+              
+              <div class="flex-1">
+                <h2 class="text-xl font-semibold mb-3">{article.frontmatter.title}</h2>
+                
+                <div class="meta flex flex-wrap items-center gap-4 mb-3">
+                  <div class="date text-gray-500 text-sm">
+                    {new Date(article.frontmatter.date || new Date()).toLocaleDateString('ja-JP', {
+                      year: 'numeric', month: 'long', day: 'numeric'
+                    })}
+                  </div>
+                  
+                  <div class="type">
+                    <span class="bg-gray-100 text-gray-700 rounded-full px-3 py-1 text-xs font-medium">
+                      {article.frontmatter.type}
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="topics flex flex-wrap gap-2">
+                  {article.frontmatter.topics && article.frontmatter.topics.map((topic: string) => (
+                    <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-xs font-medium">
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+    
+    <div class="mt-12 text-center">
+      <a href="/" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+        ホームに戻る
+      </a>
+    </div>
+  </div>
 </MainLayout>
