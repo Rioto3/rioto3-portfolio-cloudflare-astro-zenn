@@ -47,9 +47,10 @@ const html = markdownToHtml(body, {
 ---
 
 <MainLayout>
-  <article class="article-container py-8">
+  <article class="article-container p-24">
+  
     <!-- 記事ヘッダー部分 -->
-    <div class="article-header bg-white rounded-lg shadow-sm p-8 mb-8 border">
+    <div class="article-header p-8 mb-8 ">
       <div class="emoji-container mb-4">
         <span class="text-5xl block">{emoji || "📝"}</span>
       </div>
@@ -82,7 +83,7 @@ const html = markdownToHtml(body, {
     </div>
     
     <!-- 記事コンテンツ部分 -->
-    <div class="article-content bg-white rounded-lg shadow-sm p-8 border">
+    <div class="article-content bg-white rounded-lg p-8 border border-[#F7F6F2]">
       <div class="znc prose prose-lg max-w-none">
         <Fragment set:html={html} />
       </div>
