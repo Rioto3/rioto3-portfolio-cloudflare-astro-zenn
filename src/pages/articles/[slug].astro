@@ -1,7 +1,9 @@
 ---
+// [slug].astro
 import lib from 'zenn-markdown-html';
 import 'zenn-content-css';
 import MainLayout from '../../layouts/MainLayout.astro';
+import matter from 'gray-matter';
 
 export async function getStaticPaths() {
   const articles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
@@ -9,8 +11,6 @@ export async function getStaticPaths() {
   return Promise.all(
     Object.entries(articles).map(async ([path, resolver]) => {
       const rawContent = await resolver();
-      // frontmatterをパース（gray-matterなどを使用）
-      // ...
       const slug = path.split('/').pop().replace('.md', '');
       
       return {
@@ -22,15 +22,31 @@ export async function getStaticPaths() {
 }
 
 const { rawContent } = Astro.props;
+const { data: frontmatter, content } = matter(rawContent);
 const markdownToHtml = typeof lib === 'function' ? lib : lib.default;
-const htmlContent = markdownToHtml(rawContent, {
+const htmlContent = markdownToHtml(content, {
   embedOrigin: "https://embed.zenn.studio"
 });
 ---
 
 <MainLayout>
-  <article>
-    <!-- <h1>{frontmatter.title}</h1> -->
+  <article class="max-w-4xl mx-auto py-8 px-4">
+    <header class="mb-8">
+      <div class="flex items-center mb-4">
+        <span class="text-4xl mr-3">{frontmatter.emoji}</span>
+        <div>
+          <time class="text-gray-500 text-sm">{new Date(frontmatter.date || Date.now()).toLocaleDateString('ja-JP')}</time>
+        </div>
+      </div>
+      
+      <h1 class="text-3xl font-bold mb-4">{frontmatter.title}</h1>
+      
+      <div class="flex flex-wrap gap-2 mb-4">
+        {frontmatter.topics && frontmatter.topics.map(topic => (
+          <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{topic}</span>
+        ))}
+      </div>
+    </header>
     
     <div class="znc">
       <Fragment set:html={htmlContent} />
