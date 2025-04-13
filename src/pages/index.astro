@@ -3,7 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import lib from 'zenn-markdown-html';
 import 'zenn-content-css';
 
-const articles = await import.meta.glob('../../../content/articles/*.md');
+const articles = await import.meta.glob('../content/articles/*.md');
 const articleEntries = await Promise.all(
   Object.entries(articles).map(async ([path, resolver]) => {
     const { frontmatter, default: Content } = await resolver();
@@ -88,12 +88,3 @@ const publishedArticles = articleEntries
     </section>
   </div>
 </MainLayout>
-
-<style>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
