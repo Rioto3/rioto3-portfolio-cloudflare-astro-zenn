@@ -6,52 +6,69 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import matter from 'gray-matter';
 
 export async function getStaticPaths() {
-  const articles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
+  const articlesFiles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
   
-  return Promise.all(
-    Object.entries(articles).map(async ([path, resolver]) => {
+  const articles = await Promise.all(
+    Object.entries(articlesFiles).map(async ([path, resolver]) => {
       const rawContent = await resolver();
+      const { data, content } = matter(rawContent);
       const slug = path.split('/').pop().replace('.md', '');
       
       return {
-        params: { slug },
-        props: { rawContent }
+        slug,
+        frontmatter: data,
+        content
       };
     })
   );
+  
+  return articles.map(article => {
+    return {
+      params: { slug: article.slug },
+      props: {
+        title: article.frontmatter.title,
+        emoji: article.frontmatter.emoji,
+        type: article.frontmatter.type,
+        topics: article.frontmatter.topics,
+        date: article.frontmatter.date,
+        body: article.content
+      }
+    };
+  });
 }
 
-const { rawContent } = Astro.props;
-const { data: frontmatter, content } = matter(rawContent);
+const { title, emoji, type, topics, date, body } = Astro.props;
 const markdownToHtml = typeof lib === 'function' ? lib : lib.default;
-const htmlContent = markdownToHtml(content, {
+const html = markdownToHtml(body, {
   embedOrigin: "https://embed.zenn.studio"
 });
 ---
 
 <MainLayout>
-  <article class="max-w-4xl mx-auto py-8 px-4">
-    <header class="mb-8">
-      <div class="flex items-center mb-4">
-        <span class="text-4xl mr-3">{frontmatter.emoji}</span>
-        <div>
-          <time class="text-gray-500 text-sm">{new Date(frontmatter.date || Date.now()).toLocaleDateString('ja-JP')}</time>
+  <div class="bg-gray-50 pt-12 pb-8">
+    <div class="max-w-3xl mx-auto px-4">
+      <div class="flex items-center space-x-2 mb-2">
+        <span class="text-4xl">{emoji || "📝"}</span>
+        <div class="text-sm text-gray-500">
+          <span>{new Date(date || new Date()).toLocaleDateString('ja-JP', {year: 'numeric', month: 'long', day: 'numeric'})}に公開</span>
         </div>
       </div>
       
-      <h1 class="text-3xl font-bold mb-4">{frontmatter.title}</h1>
+      <h1 class="text-3xl font-bold mb-6">{title}</h1>
       
       <div class="flex flex-wrap gap-2 mb-4">
-        {frontmatter.topics && frontmatter.topics.map(topic => (
-          <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{topic}</span>
+        {topics && topics.map((topic: string) => (
+          <span class="bg-gray-100 text-gray-700 rounded-full px-3 py-1 text-sm">{topic} </span>
         ))}
       </div>
-    </header>
-    
-    <div class="znc">
-      <Fragment set:html={htmlContent} />
     </div>
-  </article>
+  </div>
+  
+  <div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="znc">
+      <Fragment set:html={html} />
+    </div>
+  </div>
 </MainLayout>
 
 <script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>
