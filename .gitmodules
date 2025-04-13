@@ -1,0 +1,4 @@
+[submodule "content"]
+	path = content
+	url = https://github.com/Rioto3/zenn-contents
+	branch = main
