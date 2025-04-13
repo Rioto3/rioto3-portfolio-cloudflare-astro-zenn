@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import lib from 'zenn-markdown-html';
 import 'zenn-content-css';
 
+import "../styles/global.css";
 const articles = await import.meta.glob('../../../content/articles/*.md');
 const articleEntries = await Promise.all(
   Object.entries(articles).map(async ([path, resolver]) => {

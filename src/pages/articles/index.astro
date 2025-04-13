@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
+import "../../styles/global.css";
 
 const articles = await Astro.glob('../../content/articles/*.md');
 const sortedArticles = articles
