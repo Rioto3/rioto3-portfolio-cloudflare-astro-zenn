@@ -5,6 +5,8 @@ import 'zenn-content-css';
 import MainLayout from '../../layouts/MainLayout.astro';
 import matter from 'gray-matter';
 
+import "../../styles/global.css";
+
 export async function getStaticPaths() {
   const articlesFiles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
   
