@@ -1,11 +1,79 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import MainLayout from '../layouts/MainLayout.astro';
+import lib from 'zenn-markdown-html';
+import 'zenn-content-css';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const articles = await import.meta.glob('../../../content/articles/*.md');
+const articleEntries = await Promise.all(
+  Object.entries(articles).map(async ([path, resolver]) => {
+    const { frontmatter, default: Content } = await resolver();
+    const rawContent = await Content();
+    const markdownToHtml = lib.default ? lib.default : lib;
+    const htmlContent = markdownToHtml(rawContent);
+    
+    return {
+      frontmatter,
+      htmlContent,
+      path
+    };
+  })
+);
+
+// 公開済みの記事のみフィルタリング
+const publishedArticles = articleEntries
+  .filter(article => article.frontmatter.published)
+  .sort((a, b) => 
+    new Date(b.frontmatter.date || 0) - new Date(a.frontmatter.date || 0)
+  )
+  .slice(0, 3); // 最新の3記事のみ表示
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<MainLayout>
+  <div class="container mx-auto px-4 py-8">
+    <section class="hero mb-12">
+      <h1 class="text-4xl font-bold mb-4">Rioto3's Portfolio</h1>
+      <p class="text-xl text-gray-600">
+        テクノロジーと innovation の最前線から生まれる洞察
+      </p>
+    </section>
+
+    <section class="recent-articles">
+      <h2 class="text-3xl font-semibold mb-6">最近の記事</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        {publishedArticles.map(article => (
+          <article class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+            <a href={`/articles/${article.path.split('/').pop().replace('.md', '')}`}>
+              <div class="mb-4">
+                <span class="text-4xl">{article.frontmatter.emoji}</span>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">{article.frontmatter.title}</h3>
+              <div class="text-sm text-gray-500">
+                <p>タイプ: {article.frontmatter.type}</p>
+                <p>トピック: {article.frontmatter.topics.join(', ')}</p>
+              </div>
+              <div class="znc" set:html={article.htmlContent.slice(0, 200) + '...'}></div>
+            </a>
+          </article>
+        ))}
+      </div>
+      <div class="text-center mt-8">
+        <a 
+          href="/articles" 
+          class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          すべての記事を見る
+        </a>
+      </div>
+    </section>
+
+    <section class="about mt-12">
+      <h2 class="text-3xl font-semibold mb-6">About Me</h2>
+      <div class="bg-gray-100 p-8 rounded-lg">
+        <p class="text-lg">
+          テクノロジーの可能性を追求し、イノベーションを通じて社会に変革をもたらすことを使命としています。
+          多分野横断的なアプローチと第一原理思考で、既存の常識を超える解決策を探求しています。
+        </p>
+      </div>
+    </section>
+  </div>
+</MainLayout>

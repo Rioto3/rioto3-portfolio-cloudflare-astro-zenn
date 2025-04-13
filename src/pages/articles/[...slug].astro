@@ -1,0 +1,44 @@
+---
+import lib from 'zenn-markdown-html';
+import 'zenn-content-css';
+import MainLayout from '../../layouts/MainLayout.astro';
+
+export async function getStaticPaths() {
+  const articles = await import.meta.glob('../../../content/articles/*.md');
+  
+  return Promise.all(
+    Object.entries(articles).map(async ([path, resolver]) => {
+      const { frontmatter } = await resolver();
+      const slug = path.split('/').pop().replace('.md', '');
+      
+      return {
+        params: { slug },
+        props: { 
+          article: {
+            frontmatter,
+            rawContent: await (await resolver()).default
+          }
+        }
+      };
+    })
+  );
+}
+
+const { article } = Astro.props;
+const markdownToHtml = lib.default ? lib.default : lib;
+const htmlContent = markdownToHtml(article.rawContent);
+
+---
+
+<MainLayout>
+  <div class="znc">
+    <h1>{article.frontmatter.title}</h1>
+    <Fragment set:html={htmlContent} />
+
+    {htmlContent}
+
+    
+  </div>
+</MainLayout>
+
+<script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>

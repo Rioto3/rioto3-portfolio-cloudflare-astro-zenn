@@ -1,0 +1,18 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+
+const articles = await Astro.glob('../../../content/articles/*.md');
+---
+
+<MainLayout>
+  <h1>Articles</h1>
+  <ul>
+    {articles.map(article => (
+      <li>
+        <a href={`/articles/${article.frontmatter.slug || article.file.split('/').pop().replace('.md', '')}`}>
+          {article.frontmatter.title}
+        </a>
+      </li>
+    ))}
+  </ul>
+</MainLayout>
