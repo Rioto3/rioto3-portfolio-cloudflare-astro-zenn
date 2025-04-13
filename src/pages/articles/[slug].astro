@@ -4,7 +4,7 @@ import 'zenn-content-css';
 import MainLayout from '../../layouts/MainLayout.astro';
 
 export async function getStaticPaths() {
-  const articles = await import.meta.glob('../../../content/articles/*.md');
+  const articles = await import.meta.glob('../../content/articles/*.md');
   
   return Promise.all(
     Object.entries(articles).map(async ([path, resolver]) => {
