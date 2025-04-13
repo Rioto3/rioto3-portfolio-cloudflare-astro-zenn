@@ -29,47 +29,58 @@ const publishedArticles = articleEntries
 ---
 
 <MainLayout>
-  <div class="container mx-auto px-4 py-8">
-    <section class="hero mb-12">
-      <h1 class="text-4xl font-bold mb-4">Rioto3's Portfolio</h1>
-      <p class="text-xl text-gray-600">
+  <div class="py-10">
+    <section class="hero mb-16">
+      <h1 class="text-5xl font-bold mb-6">Rioto3's Portfolio</h1>
+      <p class="text-2xl text-gray-600">
         テクノロジーと innovation の最前線から生まれる洞察
       </p>
     </section>
 
     <section class="recent-articles">
-      <h2 class="text-3xl font-semibold mb-6">最近の記事</h2>
-      <div class="grid md:grid-cols-3 gap-6">
+      <h2 class="text-3xl font-semibold mb-8">最近の記事</h2>
+      <div class="grid md:grid-cols-3 gap-8">
         {publishedArticles.map(article => (
-          <article class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
-            <a href={`/articles/${article.path.split('/').pop().replace('.md', '')}`}>
-              <div class="mb-4">
-                <span class="text-4xl">{article.frontmatter.emoji}</span>
+          <article class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-white">
+            <a href={`/articles/${article.path.split('/').pop().replace('.md', '')}`} class="block h-full">
+              <div class="bg-gray-50 p-4 flex items-center border-b">
+                <span class="text-4xl mr-3">{article.frontmatter.emoji}</span>
+                <div>
+                  <h3 class="text-xl font-semibold">{article.frontmatter.title}</h3>
+                </div>
               </div>
-              <h3 class="text-xl font-semibold mb-2">{article.frontmatter.title}</h3>
-              <div class="text-sm text-gray-500">
-                <p>タイプ: {article.frontmatter.type}</p>
-                <p>トピック: {article.frontmatter.topics.join(', ')}</p>
+              
+              <div class="p-5">
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {article.frontmatter.topics.map((topic: string) => (
+                    <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">{topic}</span>
+                  ))}
+                </div>
+                
+                <div class="text-gray-500 mb-3 text-sm">
+                  <p>タイプ: <span class="font-medium text-gray-700">{article.frontmatter.type}</span></p>
+                </div>
+                
+                <div class="znc text-gray-700 prose-sm line-clamp-3" set:html={article.htmlContent.slice(0, 200) + '...'}></div>
               </div>
-              <div class="znc" set:html={article.htmlContent.slice(0, 200) + '...'}></div>
             </a>
           </article>
         ))}
       </div>
-      <div class="text-center mt-8">
+      <div class="text-center mt-10">
         <a 
           href="/articles" 
-          class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+          class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
         >
           すべての記事を見る
         </a>
       </div>
     </section>
 
-    <section class="about mt-12">
+    <section class="about mt-16">
       <h2 class="text-3xl font-semibold mb-6">About Me</h2>
-      <div class="bg-gray-100 p-8 rounded-lg">
-        <p class="text-lg">
+      <div class="bg-white p-8 rounded-lg shadow-sm border">
+        <p class="text-lg text-gray-700">
           テクノロジーの可能性を追求し、イノベーションを通じて社会に変革をもたらすことを使命としています。
           多分野横断的なアプローチと第一原理思考で、既存の常識を超える解決策を探求しています。
         </p>
@@ -77,3 +88,12 @@ const publishedArticles = articleEntries
     </section>
   </div>
 </MainLayout>
+
+<style>
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
