@@ -8,37 +8,29 @@ export async function getStaticPaths() {
   
   return Promise.all(
     Object.entries(articles).map(async ([path, resolver]) => {
-      const { frontmatter } = await resolver();
+      const result = await resolver();
+      const { frontmatter, Content } = result;
       const slug = path.split('/').pop().replace('.md', '');
       
       return {
         params: { slug },
-        props: { 
-          article: {
-            frontmatter,
-            rawContent: await (await resolver()).default
-          }
-        }
+        props: { frontmatter, Content }
       };
     })
   );
 }
 
-const { article } = Astro.props;
-const markdownToHtml = lib.default ? lib.default : lib;
-const htmlContent = markdownToHtml(article.rawContent);
-
+const { frontmatter, Content } = Astro.props;
 ---
 
 <MainLayout>
-  <div class="znc">
-    <h1>{article.frontmatter.title}</h1>
-    <Fragment set:html={htmlContent} />
-
-    {htmlContent}
-
+  <article>
+    <h1>{frontmatter.title}</h1>
     
-  </div>
+    <div class="znc">
+      <Content />
+    </div>
+  </article>
 </MainLayout>
 
 <script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>
