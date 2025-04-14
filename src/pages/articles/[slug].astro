@@ -7,8 +7,24 @@ import matter from 'gray-matter';
 
 import "../../styles/global.css";
 
+// サブモジュールなどからコンテンツを取得する関数
+async function getArticles() {
+  try {
+    const articles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
+    if (Object.keys(articles).length > 0) {
+      return articles;
+    }
+    
+    // 代替パスを試す（サブモジュールがある場合）
+    return await import.meta.glob('../../../../content/articles/*.md', { as: 'raw' });
+  } catch (error) {
+    console.error("記事の取得に失敗しました:", error);
+    return {};
+  }
+}
+
 export async function getStaticPaths() {
-  const articlesFiles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
+  const articlesFiles = await getArticles();
   
   const articles = await Promise.all(
     Object.entries(articlesFiles).map(async ([path, resolver]) => {
@@ -46,59 +62,59 @@ const html = markdownToHtml(body, {
 });
 ---
 
-<MainLayout>
-  <article class="article-container p-24">
-  
+<MainLayout title={`${title} | Rioto3's Portfolio`} description={title}>
+  <article>
     <!-- 記事ヘッダー部分 -->
-    <div class="article-header p-8 mb-8 ">
-      <div class="emoji-container mb-4">
-        <span class="text-5xl block">{emoji || "📝"}</span>
+    <header class="mb-8 pb-8 border-b">
+      <div class="flex items-center mb-4">
+        <span class="text-5xl mr-4">{emoji || "📝"}</span>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold">{title}</h1>
+        </div>
       </div>
       
-      <h1 class="text-3xl font-bold mb-6">{title}</h1>
-      
-      <div class="meta-container flex flex-wrap items-center gap-4 mb-6">
-        <div class="date-container text-gray-500">
-          <time datetime={date}>
-            {new Date(date || new Date()).toLocaleDateString('ja-JP', {year: 'numeric', month: 'long', day: 'numeric'})}に公開
-          </time>
-        </div>
+      <div class="flex flex-wrap items-center gap-4 mt-4">
+        <time datetime={date} class="text-gray-600 text-sm">
+          {new Date(date || new Date()).toLocaleDateString('ja-JP', {
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric'
+          })}
+        </time>
         
-        <div class="type-container">
-          <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">
+        {type && (
+          <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
             {type}
           </span>
-        </div>
+        )}
       </div>
       
-      <div class="topics-container">
-        <div class="flex flex-wrap gap-2">
-          {topics && topics.map((topic: string) => (
-            <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
+      {topics && topics.length > 0 && (
+        <div class="flex flex-wrap gap-2 mt-4">
+          {topics.map((topic) => (
+            <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
               {topic}
             </span>
           ))}
         </div>
-      </div>
-    </div>
+      )}
+    </header>
     
     <!-- 記事コンテンツ部分 -->
-    <div class="article-content bg-white rounded-lg p-8 border border-[#F7F6F2]">
-      <div class="znc prose prose-lg max-w-none">
-        <Fragment set:html={html} />
-      </div>
+    <div class="znc prose max-w-none">
+      <Fragment set:html={html} />
     </div>
     
     <!-- 記事フッター部分 -->
-    <div class="article-footer mt-8 text-center">
+    <div class="mt-12 pt-6 border-t text-center">
       <a 
-        href="/" 
+        href="/articles" 
         class="inline-flex items-center text-blue-600 hover:text-blue-800"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
         </svg>
-        ホームに戻る
+        記事一覧に戻る
       </a>
     </div>
   </article>
@@ -108,14 +124,7 @@ const html = markdownToHtml(body, {
 
 <style>
   .znc {
-    font-size: 1.05rem;
+    font-size: 1rem;
     line-height: 1.8;
-  }
-  
-  @media (max-width: 640px) {
-    .article-header,
-    .article-content {
-      padding: 1.5rem;
-    }
   }
 </style>
