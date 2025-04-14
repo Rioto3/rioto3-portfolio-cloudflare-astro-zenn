@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://rioto3.com', // サイトのURLを指定（本番用に変更が必要）
+  site: 'https://www.rioto3.com', // サイトのURLを指定
   vite: {
     plugins: [tailwindcss()]
   },
