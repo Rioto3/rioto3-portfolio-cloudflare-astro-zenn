@@ -7,45 +7,40 @@ import matter from 'gray-matter';
 
 import "../../styles/global.css";
 
-// サブモジュールなどからコンテンツを取得する関数
-async function getArticles() {
-  try {
-    // 静的なパターンのみ使用可能
-    const articlesInContent = await import.meta.glob('../../content/articles/*.md', { 
-      query: '?raw', 
-      import: 'default' 
-    });
-    
-    if (Object.keys(articlesInContent).length > 0) {
-      return articlesInContent;
-    }
-    
-    // 別のパスパターンを試す
-    const articlesInParentContent = await import.meta.glob('../../../content/articles/*.md', { 
-      query: '?raw', 
-      import: 'default' 
-    });
-    
-    if (Object.keys(articlesInParentContent).length > 0) {
-      return articlesInParentContent;
-    }
-    
-    // 最も深いパスも試す
-    return await import.meta.glob('../../../../content/articles/*.md', { 
-      query: '?raw', 
-      import: 'default' 
-    });
-  } catch (error) {
-    console.error("記事の取得に失敗しました:", error);
-    return {};
-  }
-}
-
 export async function getStaticPaths() {
-  const articlesFiles = await getArticles();
+  // 静的なパターンのみ使用可能 - 直接関数内でimport.globを呼び出す
+  let articleFiles = {};
   
+  try {
+    // 最初のパスパターンを試す
+    articleFiles = await import.meta.glob('../../content/articles/*.md', { 
+      query: '?raw', 
+      import: 'default' 
+    });
+    
+    // 記事が見つからなければ他のパスを試す
+    if (Object.keys(articleFiles).length === 0) {
+      articleFiles = await import.meta.glob('../../../content/articles/*.md', { 
+        query: '?raw', 
+        import: 'default' 
+      });
+    }
+    
+    // それでも見つからなければさらに深いパスも試す
+    if (Object.keys(articleFiles).length === 0) {
+      articleFiles = await import.meta.glob('../../../../content/articles/*.md', { 
+        query: '?raw', 
+        import: 'default' 
+      });
+    }
+  } catch (error) {
+    console.error("記事ファイルの取得に失敗しました:", error);
+    articleFiles = {};
+  }
+  
+  // 各記事のパスと内容を処理
   const articles = await Promise.all(
-    Object.entries(articlesFiles).map(async ([path, resolver]) => {
+    Object.entries(articleFiles).map(async ([path, resolver]) => {
       const rawContent = await resolver();
       const { data, content } = matter(rawContent);
       const slug = path.split('/').pop().replace('.md', '');
@@ -58,6 +53,7 @@ export async function getStaticPaths() {
     })
   );
   
+  // 静的パスを返す
   return articles.map(article => {
     return {
       params: { slug: article.slug },
