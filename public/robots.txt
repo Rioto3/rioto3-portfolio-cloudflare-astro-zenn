@@ -1,0 +1,19 @@
+# Robots.txt for rioto3.dev
+
+User-agent: *
+Allow: /
+Sitemap: https://rioto3.dev/sitemap.xml
+
+# Specific crawler settings
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block specific directories or files if needed
+# Disallow: /private/
+# Disallow: /admin/
+
+# Performance optimization hints
+Crawl-delay: 10
