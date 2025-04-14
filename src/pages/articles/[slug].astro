@@ -74,6 +74,36 @@ const markdownToHtml = typeof lib === 'function' ? lib : lib.default;
 const html = markdownToHtml(body, {
   embedOrigin: "https://embed.zenn.studio"
 });
+
+// Twitterの埋め込みを見つけてレスポンシブ対応
+function processTwitterEmbeds(html) {
+  // Twitter埋め込みURLのパターン
+  const twitterEmbedPattern = /<a\s+[^>]*?href="https:\/\/twitter\.com\/[^"]*\/status\/[^"]*"[^>]*>.*?<\/a>/g;
+  
+  // TwitterのURLパターン
+  const twitterUrlPattern = /https:\/\/twitter\.com\/([^\/]+)\/status\/([^\/\?"]+)/;
+  
+  // レスポンシブ対応のブロックに置換
+  return html.replace(twitterEmbedPattern, (match) => {
+    const urlMatch = match.match(twitterUrlPattern);
+    if (urlMatch) {
+      const username = urlMatch[1];
+      const tweetId = urlMatch[2];
+      
+      return `
+        <div class="twitter-embed-container">
+          <blockquote class="twitter-tweet" data-conversation="none" data-theme="light">
+            <a href="https://twitter.com/${username}/status/${tweetId}"></a>
+          </blockquote>
+        </div>
+      `;
+    }
+    return match;
+  });
+}
+
+// Twitter埋め込みを処理
+const processedHtml = processTwitterEmbeds(html);
 ---
 
 <MainLayout title={`${title} | Rioto3's Portfolio`} description={title}>
@@ -113,8 +143,8 @@ const html = markdownToHtml(body, {
     
     <!-- 記事コンテンツ部分 -->
     <div class="article-content bg-white rounded-lg p-4 sm:p-6 border border-[#F7F6F2] overflow-hidden">
-      <div class="znc prose max-w-none overflow-hidden">
-        <Fragment set:html={html} />
+      <div class="znc prose max-w-none overflow-hidden" id="article-content">
+        <Fragment set:html={processedHtml} />
       </div>
     </div>
     
@@ -133,27 +163,62 @@ const html = markdownToHtml(body, {
   </article>
 </MainLayout>
 
-<!-- Twitter埋め込み用のスクリプト -->
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<!-- Twitter埋め込み用のスクリプト、明示的に先に読み込み -->
+<script is:inline>
+  // Twitter widgets JSを動的に読み込み
+  window.twttrLoadPromise = new Promise((resolve) => {
+    window.twttrResolve = resolve;
+    
+    const script = document.createElement('script');
+    script.setAttribute('src', 'https://platform.twitter.com/widgets.js');
+    script.setAttribute('charset', 'utf-8');
+    script.onload = () => {
+      if (window.twttr) {
+        window.twttrResolve(window.twttr);
+      }
+    };
+    document.head.appendChild(script);
+  });
+</script>
 
 <!-- Zenn埋め込み要素対応スクリプト -->
 <script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>
 
-<script>
-  // TwitterウィジェットのロードやDOMの変更後に埋め込みを再処理
-  document.addEventListener('DOMContentLoaded', () => {
+<script is:inline>
+  // DOM操作用関数
+  function loadTwitterWidgets() {
     // Twitter埋め込みの再初期化
     if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load();
+      console.log('Rendering Twitter embeds...');
+      window.twttr.widgets.load(document.getElementById('article-content'));
+    }
+  }
+  
+  // DOMContentLoaded時に実行
+  document.addEventListener('DOMContentLoaded', () => {
+    // twttrLoadPromiseが解決されたらウィジェットを読み込む
+    if (window.twttrLoadPromise) {
+      window.twttrLoadPromise.then(() => {
+        loadTwitterWidgets();
+      });
+    } else {
+      // フォールバック - 直接読み込み試行
+      loadTwitterWidgets();
     }
     
-    // 遅延して再初期化（非同期ロードの完了後に試行）
-    setTimeout(() => {
-      if (window.twttr && window.twttr.widgets) {
-        window.twttr.widgets.load();
-      }
-    }, 1000);
+    // 遅延しても確実に読み込むためのフォールバック
+    setTimeout(loadTwitterWidgets, 1000);
+    setTimeout(loadTwitterWidgets, 2000);
   });
+
+  // Twitter APIイベントリスナー
+  if (window.twttr) {
+    window.twttr.ready((twttr) => {
+      twttr.events.bind('loaded', function() {
+        console.log('Twitter widgets loaded successfully');
+      });
+    });
+  }
 </script>
 
 <style is:global>
@@ -183,9 +248,14 @@ const html = markdownToHtml(body, {
   }
   
   /* ツイート埋め込みのレスポンシブ対応 */
+  .twitter-embed-container {
+    max-width: 550px;
+    margin: 1.5em auto;
+    overflow: hidden;
+  }
+  
   .znc .twitter-tweet,
   .znc .twitter-tweet-rendered {
-    width: 100% !important;
     margin: 1em auto !important;
   }
   
