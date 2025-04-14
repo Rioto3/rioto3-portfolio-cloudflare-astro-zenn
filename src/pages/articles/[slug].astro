@@ -10,13 +10,23 @@ import "../../styles/global.css";
 // サブモジュールなどからコンテンツを取得する関数
 async function getArticles() {
   try {
-    const articles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
+    // 推奨される新しい構文を使用
+    const contentDir = import.meta.env.DEV ? '../../content/articles/' : '../content/articles/';
+    const articles = await import.meta.glob(contentDir + '*.md', { 
+      query: '?raw', 
+      import: 'default' 
+    });
+    
     if (Object.keys(articles).length > 0) {
       return articles;
     }
     
-    // 代替パスを試す（サブモジュールがある場合）
-    return await import.meta.glob('../../../../content/articles/*.md', { as: 'raw' });
+    // 代替パスを試す（深いネストの場合）
+    const altContentDir = import.meta.env.DEV ? '../../../content/articles/' : '../../content/articles/';
+    return await import.meta.glob(altContentDir + '*.md', { 
+      query: '?raw', 
+      import: 'default' 
+    });
   } catch (error) {
     console.error("記事の取得に失敗しました:", error);
     return {};
