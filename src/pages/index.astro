@@ -2,19 +2,34 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import lib from 'zenn-markdown-html';
 import 'zenn-content-css';
+import matter from 'gray-matter';
 
 import "../styles/global.css";
-const articles = await import.meta.glob('../../../content/articles/*.md');
+
+// サブモジュールなどからコンテンツを取得する関数
+async function getArticles() {
+  try {
+    const articles = await import.meta.glob('../content/articles/*.md', { as: 'raw' });
+    if (Object.keys(articles).length > 0) {
+      return articles;
+    }
+    
+    // 代替パスを試す（サブモジュールがある場合）
+    return await import.meta.glob('../../../content/articles/*.md', { as: 'raw' });
+  } catch (error) {
+    console.error("記事の取得に失敗しました:", error);
+    return {};
+  }
+}
+
+const articles = await getArticles();
 const articleEntries = await Promise.all(
   Object.entries(articles).map(async ([path, resolver]) => {
-    const { frontmatter, default: Content } = await resolver();
-    const rawContent = await Content();
-    const markdownToHtml = lib.default ? lib.default : lib;
-    const htmlContent = markdownToHtml(rawContent);
+    const content = await resolver();
+    const { data: frontmatter, content: rawContent } = matter(content);
     
     return {
       frontmatter,
-      htmlContent,
       path
     };
   })
@@ -22,79 +37,72 @@ const articleEntries = await Promise.all(
 
 // 公開済みの記事のみフィルタリング
 const publishedArticles = articleEntries
-  .filter(article => article.frontmatter.published)
+  .filter(article => article.frontmatter.published !== false)
   .sort((a, b) => 
     new Date(b.frontmatter.date || 0) - new Date(a.frontmatter.date || 0)
   )
-  .slice(0, 3); // 最新の3記事のみ表示
+  .slice(0, 5); // 最新の5記事を表示
 ---
 
 <MainLayout>
-  <div class="py-10">
-    <section class="hero mb-16">
-      <h1 class="text-5xl font-bold mb-6">Rioto3's Portfolio</h1>
-      <p class="text-2xl text-gray-600">
-        テクノロジーと innovation の最前線から生まれる洞察
-      </p>
-    </section>
+  <section class="hero mb-12">
+    <h1 class="text-4xl font-bold mb-4">Rioto3's Portfolio</h1>
+    <p class="text-lg text-gray-600">
+      テクノロジーと innovation の最前線から生まれる洞察
+    </p>
+  </section>
 
-    <section class="recent-articles">
-      <h2 class="text-3xl font-semibold mb-8">最近の記事</h2>
-      <div class="grid md:grid-cols-3 gap-8">
-        {publishedArticles.map(article => (
-          <article class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-white">
-            <a href={`/articles/${article.path.split('/').pop().replace('.md', '')}`} class="block h-full">
-              <div class="bg-gray-50 p-4 flex items-center border-b">
-                <span class="text-4xl mr-3">{article.frontmatter.emoji}</span>
-                <div>
-                  <h3 class="text-xl font-semibold">{article.frontmatter.title}</h3>
-                </div>
-              </div>
-              
-              <div class="p-5">
-                <div class="flex flex-wrap gap-2 mb-4">
-                  {article.frontmatter.topics.map((topic: string) => (
-                    <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">{topic}</span>
+  <section class="recent-articles mb-16">
+    <h2 class="text-2xl font-semibold mb-6">最近の記事</h2>
+    <div class="space-y-4">
+      {publishedArticles.map(article => (
+        <article class="bg-white p-5 rounded-lg border hover:shadow-md transition-shadow">
+          <a href={`/articles/${article.path.split('/').pop().replace('.md', '')}`} class="block">
+            <div class="flex items-center gap-4">
+              <span class="text-3xl flex-shrink-0">{article.frontmatter.emoji || "📝"}</span>
+              <div>
+                <h3 class="text-lg font-medium">{article.frontmatter.title}</h3>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  {article.frontmatter.topics?.map((topic: string) => (
+                    <span class="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{topic}</span>
                   ))}
                 </div>
-                
-                <div class="text-gray-500 mb-3 text-sm">
-                  <p>タイプ: <span class="font-medium text-gray-700">{article.frontmatter.type}</span></p>
-                </div>
-                
-                <div class="znc text-gray-700 prose-sm line-clamp-3" set:html={article.htmlContent.slice(0, 200) + '...'}></div>
+                <time datetime={article.frontmatter.date} class="text-sm text-gray-500 mt-2 block">
+                  {new Date(article.frontmatter.date || new Date()).toLocaleDateString('ja-JP')}
+                </time>
               </div>
-            </a>
-          </article>
-        ))}
-      </div>
-      <div class="text-center mt-10">
-        <a 
-          href="/articles" 
-          class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          すべての記事を見る
-        </a>
-      </div>
-    </section>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+    <div class="mt-6">
+      <a href="/articles" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+        すべての記事を見る
+      </a>
+    </div>
+  </section>
 
-    <section class="about mt-16">
-      <h2 class="text-3xl font-semibold mb-6">About Me</h2>
-      <div class="bg-white p-8 rounded-lg shadow-sm border">
-        <p class="text-lg text-gray-700">
-          テクノロジーの可能性を追求し、イノベーションを通じて社会に変革をもたらすことを使命としています。
-          多分野横断的なアプローチと第一原理思考で、既存の常識を超える解決策を探求しています。
-        </p>
+  <section class="about mb-12">
+    <h2 class="text-2xl font-semibold mb-4">About Me</h2>
+    <div class="bg-white p-6 rounded-lg border">
+      <div class="flex flex-col sm:flex-row gap-6">
+        <div class="flex-1">
+          <p class="text-gray-700 mb-4">
+            テクノロジーの可能性を追求し、イノベーションを通じて社会に変革をもたらすことを使命としています。
+          </p>
+          <p class="text-gray-700">
+            多分野横断的なアプローチと第一原理思考で、既存の常識を超える解決策を探求しています。
+          </p>
+          <div class="mt-4">
+            <div class="flex flex-wrap gap-2">
+              <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Web開発</span>
+              <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">AI</span>
+              <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">データサイエンス</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </MainLayout>
-
-<style>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
