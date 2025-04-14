@@ -1,0 +1,42 @@
+# robots.txt for rioto3.com
+
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /draft/
+Allow: /
+
+# Disallow crawling of archives
+Disallow: /*?
+
+# Limit specific bots that tend to overload sites
+
+# GPTBot
+User-agent: GPTBot
+Disallow: /
+
+# CommonCrawl Bot
+User-agent: CCBot
+Disallow: /
+
+# AI data mining bots
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+# Rate limit Google
+User-agent: Googlebot
+Crawl-delay: 1
+
+# Rate limit Bing
+User-agent: Bingbot
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://rioto3.com/sitemap-index.xml
