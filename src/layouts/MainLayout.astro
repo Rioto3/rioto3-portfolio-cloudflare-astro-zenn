@@ -16,33 +16,90 @@ const {
 
 <!doctype html>
 <html lang="ja">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="description" content={description} />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        
-        {/* Open Graph Meta Tags */}
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="ja_JP" />
-        <meta name="twitter:card" content="summary_large_image" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    {/* Open Graph Meta Tags */}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
 
-        {/* Favicon関連のメタタグ */}
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="48x48" href="/favicons/favicon-48x48.png" />
-        <link rel="shortcut icon" href="/favicons/favicon.ico" />
-        <link rel="apple-touch-icon" href="/favicons/favicon-48x48.png" />
-        <link rel="manifest" href="/manifest.json" />
+    {/* Favicon関連のメタタグ */}
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicons/favicon-48x48.png" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" href="/favicons/favicon-48x48.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <meta name="theme-color" content="#4285f4" />
+    
+    <title>{title}</title>
+    <slot name="head" />
+  </head>
+  <body class="bg-gray-50 text-gray-900 antialiased">
+    <header class="bg-white shadow-sm py-3 sm:py-4">
+      <div class="max-w-3xl mx-auto px-3 sm:px-4">
+        <nav class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+          <div class="flex justify-between items-center">
+            <a href="/" class="text-lg sm:text-xl font-bold">Rioto3's Portfolio</a>
+            <button id="menu-toggle" class="sm:hidden p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+            </button>
+          </div>
+          <div id="mobile-menu" class="hidden sm:flex sm:space-x-6 pt-3 sm:pt-0">
+            <a href="/" class="block py-2 hover:text-blue-600 transition-colors">ホーム</a>
+            <a href="/articles" class="block py-2 hover:text-blue-600 transition-colors">記事一覧</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-8 overflow-hidden">
+      <slot />
+    </main>
+
+    <footer class="bg-white border-t border-[#F7F6F2] mt-8 sm:mt-12 py-4 sm:py-6">
+      <div class="max-w-3xl mx-auto px-3 sm:px-4">
+        <div class="text-center">
+          <p class="text-sm text-gray-500">© {new Date().getFullYear()} Rioto3</p>
+          <div class="flex justify-center space-x-4 mt-3 sm:mt-4">
+            <a href="https://twitter.com/rioto3_" target="_blank" rel="noopener" class="text-gray-500 hover:text-blue-500">
+              <span class="sr-only">Twitter</span>
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.039 10.039 0 01-3.133 1.197 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.937 4.937 0 004.604 3.417 9.868 9.868 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63a9.936 9.936 0 002.46-2.548l-.047-.02z"/>
+              </svg>
+            </a>
+            <a href="https://github.com/Rioto3" target="_blank" rel="noopener" class="text-gray-500 hover:text-black">
+              <span class="sr-only">GitHub</span>
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // モバイルメニューの切り替え処理
+      document.addEventListener('DOMContentLoaded', () => {
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
         
-        <meta name="theme-color" content="#4285f4" />
-        
-        <title>{title}</title>
-        <slot name="head" />
-    </head>
-    <body>
-        <slot />
-    </body>
+        if (menuToggle && mobileMenu) {
+          menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+          });
+        }
+      });
+    </script>
+  </body>
 </html>
