@@ -7,8 +7,15 @@ const { title = "Rioto3's Portfolio", description = "テクノロジーと innov
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    
+    {/* ファビコン関連のメタタグ */}
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/icon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicons/icon-48x48.png">
+    <link rel="shortcut icon" href="/favicons/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+    
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
