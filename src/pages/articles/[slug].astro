@@ -8,10 +8,39 @@ import matter from 'gray-matter';
 import "../../styles/global.css";
 
 export async function getStaticPaths() {
-  const articlesFiles = await import.meta.glob('../../content/articles/*.md', { as: 'raw' });
+  // 静的なパターンのみ使用可能 - 直接関数内でimport.globを呼び出す
+  let articleFiles = {};
   
+  try {
+    // 最初のパスパターンを試す
+    articleFiles = await import.meta.glob('../../content/articles/*.md', { 
+      query: '?raw', 
+      import: 'default' 
+    });
+    
+    // 記事が見つからなければ他のパスを試す
+    if (Object.keys(articleFiles).length === 0) {
+      articleFiles = await import.meta.glob('../../../content/articles/*.md', { 
+        query: '?raw', 
+        import: 'default' 
+      });
+    }
+    
+    // それでも見つからなければさらに深いパスも試す
+    if (Object.keys(articleFiles).length === 0) {
+      articleFiles = await import.meta.glob('../../../../content/articles/*.md', { 
+        query: '?raw', 
+        import: 'default' 
+      });
+    }
+  } catch (error) {
+    console.error("記事ファイルの取得に失敗しました:", error);
+    articleFiles = {};
+  }
+  
+  // 各記事のパスと内容を処理
   const articles = await Promise.all(
-    Object.entries(articlesFiles).map(async ([path, resolver]) => {
+    Object.entries(articleFiles).map(async ([path, resolver]) => {
       const rawContent = await resolver();
       const { data, content } = matter(rawContent);
       const slug = path.split('/').pop().replace('.md', '');
@@ -24,6 +53,7 @@ export async function getStaticPaths() {
     })
   );
   
+  // 静的パスを返す
   return articles.map(article => {
     return {
       params: { slug: article.slug },
@@ -46,11 +76,10 @@ const html = markdownToHtml(body, {
 });
 ---
 
-<MainLayout>
-  <article class="article-container p-24">
-  
+<MainLayout title={`${title} | Rioto3's Portfolio`} description={title}>
+  <article class="article-container px-18 py-5">
     <!-- 記事ヘッダー部分 -->
-    <div class="article-header p-8 mb-8 ">
+    <div class="article-header p-8 mb-8 border-b border-[#F7F6F2]">
       <div class="emoji-container mb-4">
         <span class="text-5xl block">{emoji || "📝"}</span>
       </div>
@@ -92,13 +121,13 @@ const html = markdownToHtml(body, {
     <!-- 記事フッター部分 -->
     <div class="article-footer mt-8 text-center">
       <a 
-        href="/" 
+        href="/articles" 
         class="inline-flex items-center text-blue-600 hover:text-blue-800"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
         </svg>
-        ホームに戻る
+        記事一覧に戻る
       </a>
     </div>
   </article>
@@ -108,7 +137,7 @@ const html = markdownToHtml(body, {
 
 <style>
   .znc {
-    font-size: 1.05rem;
+    font-size: 1rem;
     line-height: 1.8;
   }
   
