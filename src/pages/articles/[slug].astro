@@ -74,36 +74,66 @@ const markdownToHtml = typeof lib === 'function' ? lib : lib.default;
 const html = markdownToHtml(body, {
   embedOrigin: "https://embed.zenn.studio"
 });
+
+// Twitterの埋め込みを見つけてレスポンシブ対応
+function processTwitterEmbeds(html) {
+  // Twitter埋め込みURLのパターン
+  const twitterEmbedPattern = /<a\s+[^>]*?href="https:\/\/twitter\.com\/[^"]*\/status\/[^"]*"[^>]*>.*?<\/a>/g;
+  
+  // TwitterのURLパターン
+  const twitterUrlPattern = /https:\/\/twitter\.com\/([^\/]+)\/status\/([^\/\?"]+)/;
+  
+  // レスポンシブ対応のブロックに置換
+  return html.replace(twitterEmbedPattern, (match) => {
+    const urlMatch = match.match(twitterUrlPattern);
+    if (urlMatch) {
+      const username = urlMatch[1];
+      const tweetId = urlMatch[2];
+      
+      return `
+        <div class="twitter-embed-container">
+          <blockquote class="twitter-tweet" data-conversation="none" data-theme="light">
+            <a href="https://twitter.com/${username}/status/${tweetId}"></a>
+          </blockquote>
+        </div>
+      `;
+    }
+    return match;
+  });
+}
+
+// Twitter埋め込みを処理
+const processedHtml = processTwitterEmbeds(html);
 ---
 
 <MainLayout title={`${title} | Rioto3's Portfolio`} description={title}>
-  <article class="article-container px-18 py-5">
+  <article class="article-container">
     <!-- 記事ヘッダー部分 -->
-    <div class="article-header p-8 mb-8 border-b border-[#F7F6F2]">
-      <div class="emoji-container mb-4">
-        <span class="text-5xl block">{emoji || "📝"}</span>
+    <div class="article-header pb-4 sm:pb-6 mb-4 sm:mb-6 border-b border-[#F7F6F2]">
+      <div class="emoji-container mb-3 sm:mb-4">
+        <span class="text-4xl sm:text-5xl block">{emoji || "📝"}</span>
       </div>
       
-      <h1 class="text-3xl font-bold mb-6">{title}</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">{title}</h1>
       
-      <div class="meta-container flex flex-wrap items-center gap-4 mb-6">
-        <div class="date-container text-gray-500">
+      <div class="meta-container flex flex-wrap items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+        <div class="date-container text-gray-500 text-sm">
           <time datetime={date}>
-            {new Date(date || new Date()).toLocaleDateString('ja-JP', {year: 'numeric', month: 'long', day: 'numeric'})}に公開
+            {new Date(date || new Date()).toLocaleDateString('ja-JP', {year: 'numeric', month: 'long', day: 'numeric'})}
           </time>
         </div>
         
         <div class="type-container">
-          <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">
+          <span class="bg-gray-100 text-gray-800 rounded-full px-3 py-0.5 text-xs sm:text-sm font-medium">
             {type}
           </span>
         </div>
       </div>
       
       <div class="topics-container">
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-1.5 sm:gap-2">
           {topics && topics.map((topic: string) => (
-            <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
+            <span class="bg-blue-50 text-blue-700 rounded-full px-2 sm:px-3 py-0.5 text-xs sm:text-sm font-medium">
               {topic}
             </span>
           ))}
@@ -112,19 +142,19 @@ const html = markdownToHtml(body, {
     </div>
     
     <!-- 記事コンテンツ部分 -->
-    <div class="article-content bg-white rounded-lg p-8 border border-[#F7F6F2]">
-      <div class="znc prose prose-lg max-w-none">
-        <Fragment set:html={html} />
+    <div class="article-content bg-white rounded-lg p-4 sm:p-6 border border-[#F7F6F2] overflow-hidden">
+      <div class="znc prose max-w-none overflow-hidden" id="article-content">
+        <Fragment set:html={processedHtml} />
       </div>
     </div>
     
     <!-- 記事フッター部分 -->
-    <div class="article-footer mt-8 text-center">
+    <div class="article-footer mt-6 sm:mt-8 text-center">
       <a 
         href="/articles" 
         class="inline-flex items-center text-blue-600 hover:text-blue-800"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
         </svg>
         記事一覧に戻る
@@ -133,18 +163,125 @@ const html = markdownToHtml(body, {
   </article>
 </MainLayout>
 
+<!-- Twitter埋め込み用のスクリプト、明示的に先に読み込み -->
+<script is:inline>
+  // Twitter widgets JSを動的に読み込み
+  window.twttrLoadPromise = new Promise((resolve) => {
+    window.twttrResolve = resolve;
+    
+    const script = document.createElement('script');
+    script.setAttribute('src', 'https://platform.twitter.com/widgets.js');
+    script.setAttribute('charset', 'utf-8');
+    script.onload = () => {
+      if (window.twttr) {
+        window.twttrResolve(window.twttr);
+      }
+    };
+    document.head.appendChild(script);
+  });
+</script>
+
+<!-- Zenn埋め込み要素対応スクリプト -->
 <script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>
 
-<style>
-  .znc {
-    font-size: 1rem;
-    line-height: 1.8;
+<script is:inline>
+  // DOM操作用関数
+  function loadTwitterWidgets() {
+    // Twitter埋め込みの再初期化
+    if (window.twttr && window.twttr.widgets) {
+      console.log('Rendering Twitter embeds...');
+      window.twttr.widgets.load(document.getElementById('article-content'));
+    }
   }
   
+  // DOMContentLoaded時に実行
+  document.addEventListener('DOMContentLoaded', () => {
+    // twttrLoadPromiseが解決されたらウィジェットを読み込む
+    if (window.twttrLoadPromise) {
+      window.twttrLoadPromise.then(() => {
+        loadTwitterWidgets();
+      });
+    } else {
+      // フォールバック - 直接読み込み試行
+      loadTwitterWidgets();
+    }
+    
+    // 遅延しても確実に読み込むためのフォールバック
+    setTimeout(loadTwitterWidgets, 1000);
+    setTimeout(loadTwitterWidgets, 2000);
+  });
+
+  // Twitter APIイベントリスナー
+  if (window.twttr) {
+    window.twttr.ready((twttr) => {
+      twttr.events.bind('loaded', function() {
+        console.log('Twitter widgets loaded successfully');
+      });
+    });
+  }
+</script>
+
+<style is:global>
+  /* znc外部のスタイルを調整 */
+  .znc {
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+  
+  /* コードブロックのオーバーフロー制御 */
+  .znc pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* 画像のオーバーフロー制御 */
+  .znc img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* テーブルのオーバーフロー制御 */
+  .znc table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* ツイート埋め込みのレスポンシブ対応 */
+  .twitter-embed-container {
+    max-width: 550px;
+    margin: 1.5em auto;
+    overflow: hidden;
+  }
+  
+  .znc .twitter-tweet,
+  .znc .twitter-tweet-rendered {
+    margin: 1em auto !important;
+  }
+  
+  /* iframe埋め込みのレスポンシブ対応 */
+  .znc iframe {
+    max-width: 100%;
+  }
+  
+  /* 埋め込み要素コンテナのレスポンシブ対応 */
+  .znc .embed-zenn-link,
+  .znc .embed-twitter {
+    margin: 1.5em auto !important;
+    width: 100% !important;
+    max-width: 500px;
+  }
+  
+  /* スマホ向けフォントサイズ調整 */
   @media (max-width: 640px) {
-    .article-header,
-    .article-content {
-      padding: 1.5rem;
+    .znc h1 {
+      font-size: 1.5rem;
+    }
+    .znc h2 {
+      font-size: 1.25rem;
+    }
+    .znc h3 {
+      font-size: 1.125rem;
     }
   }
 </style>
