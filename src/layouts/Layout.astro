@@ -2,32 +2,46 @@
 import '../styles/global.css';
 
 interface Props {
-	title: string;
+    title?: string;
+    description?: string;
+    ogImage?: string;
 }
 
-const { title } = Astro.props;
+const { 
+    title = 'Rioto3 Portfolio', 
+    description = 'Web開発者、エンジニアのポートフォリオサイト', 
+    ogImage = '/og-image.png' 
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang="ja">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Rioto3のポートフォリオサイト" />
-		<meta name="viewport" content="width=device-width" />
-		
-		{/* Favicon関連のメタタグ */}
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="48x48" href="/favicons/favicon-48x48.png">
-		<link rel="shortcut icon" href="/favicons/favicon.ico">
-		<link rel="apple-touch-icon" href="/favicons/favicon-48x48.png">
-		<link rel="manifest" href="/manifest.json">
-		
-		<meta name="theme-color" content="#4285f4">
-		
-		<title>{title}</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content={description} />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="ja_JP" />
+        <meta name="twitter:card" content="summary_large_image" />
+
+        {/* Favicon関連のメタタグ */}
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/favicons/favicon-48x48.png" />
+        <link rel="shortcut icon" href="/favicons/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicons/favicon-48x48.png" />
+        <link rel="manifest" href="/manifest.json" />
+        
+        <meta name="theme-color" content="#4285f4" />
+        
+        <title>{title}</title>
+    </head>
+    <body>
+        <slot />
+    </body>
 </html>
