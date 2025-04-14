@@ -10,20 +10,28 @@ import "../../styles/global.css";
 // サブモジュールなどからコンテンツを取得する関数
 async function getArticles() {
   try {
-    // 推奨される新しい構文を使用
-    const contentDir = import.meta.env.DEV ? '../../content/articles/' : '../content/articles/';
-    const articles = await import.meta.glob(contentDir + '*.md', { 
+    // 静的なパターンのみ使用可能
+    const articlesInContent = await import.meta.glob('../../content/articles/*.md', { 
       query: '?raw', 
       import: 'default' 
     });
     
-    if (Object.keys(articles).length > 0) {
-      return articles;
+    if (Object.keys(articlesInContent).length > 0) {
+      return articlesInContent;
     }
     
-    // 代替パスを試す（深いネストの場合）
-    const altContentDir = import.meta.env.DEV ? '../../../content/articles/' : '../../content/articles/';
-    return await import.meta.glob(altContentDir + '*.md', { 
+    // 別のパスパターンを試す
+    const articlesInParentContent = await import.meta.glob('../../../content/articles/*.md', { 
+      query: '?raw', 
+      import: 'default' 
+    });
+    
+    if (Object.keys(articlesInParentContent).length > 0) {
+      return articlesInParentContent;
+    }
+    
+    // 最も深いパスも試す
+    return await import.meta.glob('../../../../content/articles/*.md', { 
       query: '?raw', 
       import: 'default' 
     });
