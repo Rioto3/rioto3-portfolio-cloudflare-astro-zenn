@@ -133,9 +133,30 @@ const html = markdownToHtml(body, {
   </article>
 </MainLayout>
 
+<!-- Twitter埋め込み用のスクリプト -->
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<!-- Zenn埋め込み要素対応スクリプト -->
 <script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>
 
-<style>
+<script>
+  // TwitterウィジェットのロードやDOMの変更後に埋め込みを再処理
+  document.addEventListener('DOMContentLoaded', () => {
+    // Twitter埋め込みの再初期化
+    if (window.twttr && window.twttr.widgets) {
+      window.twttr.widgets.load();
+    }
+    
+    // 遅延して再初期化（非同期ロードの完了後に試行）
+    setTimeout(() => {
+      if (window.twttr && window.twttr.widgets) {
+        window.twttr.widgets.load();
+      }
+    }, 1000);
+  });
+</script>
+
+<style is:global>
   /* znc外部のスタイルを調整 */
   .znc {
     font-size: 0.95rem;
@@ -159,6 +180,26 @@ const html = markdownToHtml(body, {
     display: block;
     width: 100%;
     overflow-x: auto;
+  }
+  
+  /* ツイート埋め込みのレスポンシブ対応 */
+  .znc .twitter-tweet,
+  .znc .twitter-tweet-rendered {
+    width: 100% !important;
+    margin: 1em auto !important;
+  }
+  
+  /* iframe埋め込みのレスポンシブ対応 */
+  .znc iframe {
+    max-width: 100%;
+  }
+  
+  /* 埋め込み要素コンテナのレスポンシブ対応 */
+  .znc .embed-zenn-link,
+  .znc .embed-twitter {
+    margin: 1.5em auto !important;
+    width: 100% !important;
+    max-width: 500px;
   }
   
   /* スマホ向けフォントサイズ調整 */
