@@ -63,50 +63,49 @@ const html = markdownToHtml(body, {
 ---
 
 <MainLayout title={`${title} | Rioto3's Portfolio`} description={title}>
-  <article>
+  <article class="article-container p-20">
     <!-- 記事ヘッダー部分 -->
-    <header class="mb-8 pb-8 border-b border-[#F7F6F2]">
-      <div class="flex items-center mb-4">
-        <span class="text-5xl mr-4">{emoji || "📝"}</span>
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-bold">{title}</h1>
+    <div class="article-header p-8 mb-8 border-b border-[#F7F6F2]">
+      <div class="emoji-container mb-4">
+        <span class="text-5xl block">{emoji || "📝"}</span>
+      </div>
+      
+      <h1 class="text-3xl font-bold mb-6">{title}</h1>
+      
+      <div class="meta-container flex flex-wrap items-center gap-4 mb-6">
+        <div class="date-container text-gray-500">
+          <time datetime={date}>
+            {new Date(date || new Date()).toLocaleDateString('ja-JP', {year: 'numeric', month: 'long', day: 'numeric'})}に公開
+          </time>
+        </div>
+        
+        <div class="type-container">
+          <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">
+            {type}
+          </span>
         </div>
       </div>
       
-      <div class="flex flex-wrap items-center gap-4 mt-4">
-        <time datetime={date} class="text-gray-600 text-sm">
-          {new Date(date || new Date()).toLocaleDateString('ja-JP', {
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric'
-          })}
-        </time>
-        
-        {type && (
-          <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-            {type}
-          </span>
-        )}
-      </div>
-      
-      {topics && topics.length > 0 && (
-        <div class="flex flex-wrap gap-2 mt-4">
-          {topics.map((topic) => (
-            <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+      <div class="topics-container">
+        <div class="flex flex-wrap gap-2">
+          {topics && topics.map((topic: string) => (
+            <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
               {topic}
             </span>
           ))}
         </div>
-      )}
-    </header>
+      </div>
+    </div>
     
     <!-- 記事コンテンツ部分 -->
-    <div class="znc prose max-w-none">
-      <Fragment set:html={html} />
+    <div class="article-content bg-white rounded-lg p-8 border border-[#F7F6F2]">
+      <div class="znc prose prose-lg max-w-none">
+        <Fragment set:html={html} />
+      </div>
     </div>
     
     <!-- 記事フッター部分 -->
-    <div class="mt-12 pt-6 border-t border-[#F7F6F2] text-center">
+    <div class="article-footer mt-8 text-center">
       <a 
         href="/articles" 
         class="inline-flex items-center text-blue-600 hover:text-blue-800"
@@ -126,5 +125,12 @@ const html = markdownToHtml(body, {
   .znc {
     font-size: 1rem;
     line-height: 1.8;
+  }
+  
+  @media (max-width: 640px) {
+    .article-header,
+    .article-content {
+      padding: 1.5rem;
+    }
   }
 </style>
