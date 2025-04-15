@@ -8,6 +8,8 @@ export interface ArticleContent {
   frontmatter: {
     title: string;
     date: string;
+    published?: boolean;
+    'published-rioto3jp'?: boolean;
     [key: string]: any;
   };
 }
@@ -45,6 +47,8 @@ export async function fetchLocalMarkdownFiles(
       frontmatter: {
         title: data.title || path.basename(file, '.md'),
         date: data.date || new Date().toISOString(),
+        published: data.published || false,
+        'published-rioto3jp': data['published-rioto3jp'] || false,
         ...data
       }
     };
