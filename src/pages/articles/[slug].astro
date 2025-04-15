@@ -53,8 +53,13 @@ export async function getStaticPaths() {
     })
   );
   
+  // 個人サイト向けに公開された記事のみをフィルタリング
+  const publishedArticles = articles.filter(
+    article => article.frontmatter['published-rioto3jp'] === true
+  );
+  
   // 静的パスを返す
-  return articles.map(article => {
+  return publishedArticles.map(article => {
     return {
       params: { slug: article.slug },
       props: {
