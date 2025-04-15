@@ -50,9 +50,9 @@ const articleEntries = await Promise.all(
   })
 );
 
-// 公開済みの記事のみフィルタリング
+// 個人サイト用に公開された記事のみフィルタリング
 const publishedArticles = articleEntries
-  .filter(article => article.frontmatter.published !== false)
+  .filter(article => article.frontmatter['published-rioto3jp'] === true)
   .sort((a, b) => 
     new Date(b.frontmatter.date || 0) - new Date(a.frontmatter.date || 0)
   );
