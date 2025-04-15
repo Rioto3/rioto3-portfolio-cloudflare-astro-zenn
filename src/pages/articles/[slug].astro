@@ -53,8 +53,13 @@ export async function getStaticPaths() {
     })
   );
   
+  // 個人サイト用に公開された記事のみフィルタリング
+  const publishedArticles = articles.filter(article => 
+    article.frontmatter['published-rioto3jp'] === true
+  );
+  
   // 静的パスを返す
-  return articles.map(article => {
+  return publishedArticles.map(article => {
     return {
       params: { slug: article.slug },
       props: {
@@ -75,13 +80,13 @@ const html = markdownToHtml(body, {
   embedOrigin: "https://embed.zenn.studio"
 });
 
-// Twitterの埋め込みを見つけてレスポンシブ対応
+// 以下のコードは以前と同じ（変更なし）
 function processTwitterEmbeds(html) {
   // Twitter埋め込みURLのパターン
-  const twitterEmbedPattern = /<a\s+[^>]*?href="https:\/\/twitter\.com\/[^"]*\/status\/[^"]*"[^>]*>.*?<\/a>/g;
+  const twitterEmbedPattern = /<a\\s+[^>]*?href=\"https:\\/\\/twitter\\.com\\/[^\"]*\\/status\\/[^\"]*\"[^>]*>.*?<\\/a>/g;
   
   // TwitterのURLパターン
-  const twitterUrlPattern = /https:\/\/twitter\.com\/([^\/]+)\/status\/([^\/\?"]+)/;
+  const twitterUrlPattern = /https:\\/\\/twitter\\.com\\/([^\\/]+)\\/status\\/([^\\/\\?\"]+)/;
   
   // レスポンシブ対応のブロックに置換
   return html.replace(twitterEmbedPattern, (match) => {
@@ -107,6 +112,7 @@ const processedHtml = processTwitterEmbeds(html);
 ---
 
 <MainLayout title={`${title} | Rioto3`} description={title}>
+  <!-- 以下のコンテンツは以前と同じ（変更なし） -->
   <article class="article-container">
     <!-- 記事ヘッダー部分 -->
     <div class="article-header pb-4 sm:pb-6 mb-4 sm:mb-6 border-b border-[#F7F6F2]">
@@ -163,7 +169,7 @@ const processedHtml = processTwitterEmbeds(html);
   </article>
 </MainLayout>
 
-<!-- Twitter埋め込み用のスクリプト、明示的に先に読み込み -->
+<!-- 以下のスクリプトは以前と同じ（変更なし） -->
 <script is:inline>
   // Twitter widgets JSを動的に読み込み
   window.twttrLoadPromise = new Promise((resolve) => {
@@ -181,7 +187,6 @@ const processedHtml = processTwitterEmbeds(html);
   });
 </script>
 
-<!-- Zenn埋め込み要素対応スクリプト -->
 <script is:inline src="https://embed.zenn.studio/js/listen-embed-event.js"></script>
 
 <script is:inline>
